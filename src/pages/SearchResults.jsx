@@ -88,8 +88,6 @@ function SearchResults() {
       .finally(() => setLoading(false));
   }, [origin, destination, date, seats]);
 
-  // Deliberately excludes `date` - keeps the 7-day window anchored in place
-  // while the user taps between days, instead of jumping around.
   useEffect(() => {
     if (!origin.trim() || !destination.trim()) {
       setDatePrices([]);
@@ -262,7 +260,12 @@ function SearchResults() {
                   <div className="ticket-details">
                     <div className="ticket-meta">
                       <span className="time">{new Date(trip.departureTime).toLocaleString()}</span>
-                      <span>{trip.vehicle.make} {trip.vehicle.model} - {trip.provider.name}</span>
+                      <span>
+                        {trip.vehicle.amenities && trip.vehicle.amenities.length > 0
+                          ? trip.vehicle.amenities.join(', ')
+                          : 'Standard vehicle'}
+                        {' - Driver revealed after booking'}
+                      </span>
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                       <span className="badge badge-brand">{seatsLeft} LEFT</span>

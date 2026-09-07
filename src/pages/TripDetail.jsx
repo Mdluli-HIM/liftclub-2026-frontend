@@ -37,6 +37,16 @@ function PolicyIcon({ type }) {
   );
 }
 
+function LockIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="11" width="14" height="9" rx="2" stroke="#5B6169" strokeWidth="1.6" />
+      <path d="M8 11V7.5C8 5 9.8 3.5 12 3.5C14.2 3.5 16 5 16 7.5V11" stroke="#5B6169" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="12" cy="15" r="1.3" fill="#5B6169" />
+    </svg>
+  );
+}
+
 function TripDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -48,7 +58,7 @@ function TripDetail() {
 
   useDocumentTitle(
     trip ? trip.originCity + ' to ' + trip.destinationCity + ' | Anywhere Shuttles' : 'Trip Details | Anywhere Shuttles',
-    trip ? 'Book a seat from ' + trip.originCity + ' to ' + trip.destinationCity + ' with ' + trip.provider.name + '. R' + trip.pricePerSeat + ' per seat.' : undefined
+    trip ? 'Book a seat from ' + trip.originCity + ' to ' + trip.destinationCity + '. R' + trip.pricePerSeat + ' per seat.' : undefined
   );
 
   const [seats, setSeats] = useState(1);
@@ -98,7 +108,9 @@ function TripDetail() {
   if (!trip) return null;
 
   const seatsLeft = trip.totalSeats - trip.seatsBooked;
-  const hasPhoto = trip.vehicle.photos && trip.vehicle.photos.length > 0;
+  const revealedVehicle = bookingSuccess ? bookingSuccess.trip.vehicle : null;
+  const revealedProviderName = bookingSuccess ? bookingSuccess.trip.provider.name : null;
+  const hasRevealedPhoto = revealedVehicle && revealedVehicle.photos && revealedVehicle.photos.length > 0;
 
   return (
     <div className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
@@ -122,24 +134,37 @@ function TripDetail() {
 
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 24 }}>
         <div className="card" style={{ flex: 2, minWidth: 300 }}>
-          {hasPhoto ? (
-            <img
-              src={API_BASE_URL + trip.vehicle.photos[0]}
-              alt={trip.vehicle.make + ' ' + trip.vehicle.model}
-              style={{ width: '100%', height: 220, objectFit: 'cover', borderRadius: 10, marginBottom: 16 }}
-            />
+          {bookingSuccess ? (
+            <>
+              {hasRevealedPhoto ? (
+                <img
+                  src={API_BASE_URL + revealedVehicle.photos[0]}
+                  alt={revealedVehicle.make + ' ' + revealedVehicle.model}
+                  style={{ width: '100%', height: 220, objectFit: 'cover', borderRadius: 10, marginBottom: 16 }}
+                />
+              ) : (
+                <div style={{ width: '100%', height: 140, background: 'var(--bg)', borderRadius: 10, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="eyebrow">No photo provided by driver</span>
+                </div>
+              )}
+              <h3 style={{ fontSize: 22, marginBottom: 4 }}>{revealedVehicle.make} {revealedVehicle.model} ({revealedVehicle.year})</h3>
+              {revealedVehicle.registrationNumber && (
+                <p className="mono badge badge-muted" style={{ display: 'inline-block', marginBottom: 10 }}>
+                  {revealedVehicle.registrationNumber}
+                </p>
+              )}
+              <p style={{ margin: '0 0 12px' }}>Driver: {revealedProviderName}</p>
+            </>
           ) : (
-            <div style={{ width: '100%', height: 140, background: 'var(--bg)', borderRadius: 10, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span className="eyebrow">No photo provided by driver</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '32px 16px', background: 'var(--bg)', borderRadius: 10, marginBottom: 16 }}>
+              <LockIcon />
+              <p style={{ fontWeight: 600, marginTop: 12, marginBottom: 4 }}>Driver &amp; vehicle revealed after booking</p>
+              <p style={{ fontSize: 13, color: 'var(--ink-muted)', maxWidth: 320 }}>
+                For everyone's privacy, the driver's name and vehicle details are shown once your booking is confirmed.
+              </p>
             </div>
           )}
-          <h3 style={{ fontSize: 22, marginBottom: 4 }}>{trip.vehicle.make} {trip.vehicle.model} ({trip.vehicle.year})</h3>
-          {trip.vehicle.registrationNumber && (
-            <p className="mono badge badge-muted" style={{ display: 'inline-block', marginBottom: 10 }}>
-              {trip.vehicle.registrationNumber}
-            </p>
-          )}
-          <p style={{ margin: '0 0 12px' }}>Driver: {trip.provider.name}</p>
+
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
             {trip.vehicle.amenities.length > 0
               ? trip.vehicle.amenities.map((a) => <span key={a} className="badge badge-muted">{a}</span>)
@@ -214,18 +239,7 @@ function TripDetail() {
               <p className="success-text" style={{ marginBottom: 12 }}>
                 Booking confirmed for {bookingSuccess.seatsBooked} seat(s), R{bookingSuccess.totalPrice}.
               </p>
-              {hasPhoto && (
-                <img
-                  src={API_BASE_URL + trip.vehicle.photos[0]}
-                  alt=""
-                  style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 10 }}
-                />
-              )}
               <div className="list-row">
-                <p style={{ margin: '2px 0', fontSize: 13 }}>
-                  <strong>Vehicle:</strong> {trip.vehicle.make} {trip.vehicle.model}
-                  {trip.vehicle.registrationNumber ? ' - ' + trip.vehicle.registrationNumber : ''}
-                </p>
                 <p style={{ margin: '2px 0', fontSize: 13 }}><strong>Passenger:</strong> {bookingSuccess.passengerName}</p>
                 <p style={{ margin: '2px 0', fontSize: 13 }}><strong>Phone:</strong> {bookingSuccess.passengerPhone}</p>
                 <p style={{ margin: '2px 0', fontSize: 13 }}><strong>Pickup:</strong> {bookingSuccess.pickupLocation}</p>
