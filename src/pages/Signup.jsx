@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { roleHomePath } from '../components/RoleRoutes';
 
 function Signup() {
   const [name, setName] = useState('');
@@ -9,15 +10,19 @@ function Signup() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('CUSTOMER');
   const [error, setError] = useState('');
-  const { signup } = useAuth();
+  const { user, signup } = useAuth();
   const navigate = useNavigate();
+
+  if (user) {
+    return <Navigate to={roleHomePath(user.role)} replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     try {
-      await signup({ name, email, phone, password, role });
-      navigate('/');
+      const newUser = await signup({ name, email, phone, password, role });
+      navigate(roleHomePath(newUser.role));
     } catch (err) {
       setError(err.message);
     }

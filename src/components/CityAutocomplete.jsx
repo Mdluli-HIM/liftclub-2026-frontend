@@ -1,6 +1,15 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import SOUTH_AFRICAN_CITIES from '../data/southAfricanCities';
 
+function LocationIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M12 21C12 21 18 15.5 18 10.5C18 6.9 15.3 4 12 4C8.7 4 6 6.9 6 10.5C6 15.5 12 21 12 21Z" stroke="#15181B" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="12" cy="10.5" r="2.2" stroke="#15181B" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 function CityAutocomplete({ className, placeholder, value, onChange, label, required }) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(-1);
@@ -55,8 +64,9 @@ function CityAutocomplete({ className, placeholder, value, onChange, label, requ
   }
 
   return (
-    <div className={(className || '') + ' autocomplete-wrap'} ref={wrapRef}>
+    <div className={(className || '') + ' autocomplete-wrap field-with-icon'} ref={wrapRef}>
       {label && <label>{label}</label>}
+      <LocationIcon />
       <input
         placeholder={placeholder}
         value={value}

@@ -11,3 +11,7 @@ export function login(data) {
 export function getMe() {
   return api.get('/auth/me');
 }
+
+export function updateMe(payload) {
+  return api.patch('/auth/me', payload);
+}

@@ -1,7 +1,7 @@
 import { api } from './client';
 
-export function createBooking(tripId, seats) {
-  return api.post('/bookings', { tripId, seats });
+export function createBooking(payload) {
+  return api.post('/bookings', payload);
 }
 
 export function getMyBookings() {

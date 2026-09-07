@@ -1,20 +1,25 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { roleHomePath } from '../components/RoleRoutes';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+
+  if (user) {
+    return <Navigate to={roleHomePath(user.role)} replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     try {
-      await login(email, password);
-      navigate('/');
+      const loggedInUser = await login(email, password);
+      navigate(roleHomePath(loggedInUser.role));
     } catch (err) {
       setError(err.message);
     }

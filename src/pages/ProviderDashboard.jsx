@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { createVehicle, getMyVehicles } from '../api/vehicles';
 import { createTrip, getMyTrips } from '../api/trips';
 import { uploadProviderDocuments } from '../api/providers';
+import { API_BASE_URL } from '../api/config';
 import CityAutocomplete from '../components/CityAutocomplete';
 
 function ProviderDashboard() {
@@ -15,7 +16,8 @@ function ProviderDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [vehicleForm, setVehicleForm] = useState({ make: '', model: '', year: '', seatCapacity: '', color: '', amenities: '' });
+  const [vehicleForm, setVehicleForm] = useState({ make: '', model: '', year: '', seatCapacity: '', color: '', amenities: '', registrationNumber: '' });
+  const [vehiclePhoto, setVehiclePhoto] = useState(null);
   const [vehicleSaving, setVehicleSaving] = useState(false);
   const [vehicleError, setVehicleError] = useState('');
 
@@ -87,8 +89,11 @@ function ProviderDashboard() {
         seatCapacity: Number(vehicleForm.seatCapacity),
         color: vehicleForm.color || undefined,
         amenities,
+        registrationNumber: vehicleForm.registrationNumber,
+        photo: vehiclePhoto,
       });
-      setVehicleForm({ make: '', model: '', year: '', seatCapacity: '', color: '', amenities: '' });
+      setVehicleForm({ make: '', model: '', year: '', seatCapacity: '', color: '', amenities: '', registrationNumber: '' });
+      setVehiclePhoto(null);
       const vehiclesData = await getMyVehicles();
       setVehicles(vehiclesData.vehicles);
     } catch (err) {
@@ -146,13 +151,34 @@ function ProviderDashboard() {
       {loading && <p className="eyebrow">Loading...</p>}
       {error && <p className="error-text">{error}</p>}
 
-      {!user.isVerified && (
-        <div className="card" style={{ marginBottom: 28, borderColor: 'var(--amber)', background: '#FFF9EF' }}>
-          <p style={{ fontWeight: 600, marginBottom: 6 }}>Your account is pending verification</p>
-          <p style={{ fontSize: 14, color: 'var(--ink-muted)', marginBottom: 16 }}>
-            You can add vehicles now, but you will not be able to post trips until an admin approves your account.
-            Upload a photo of your ID and driver's license below to speed this up.
-          </p>
+      {user.verificationStatus !== 'APPROVED' && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 28,
+            borderColor: user.verificationStatus === 'REJECTED' ? 'var(--danger)' : 'var(--amber)',
+            background: user.verificationStatus === 'REJECTED' ? '#FBEDEA' : '#eef2f6',
+          }}
+        >
+          {user.verificationStatus === 'REJECTED' ? (
+            <>
+              <p style={{ fontWeight: 600, marginBottom: 6, color: 'var(--danger)' }}>Your verification was not approved</p>
+              {user.rejectionReason && (
+                <p style={{ fontSize: 14, marginBottom: 12 }}><strong>Reason:</strong> {user.rejectionReason}</p>
+              )}
+              <p style={{ fontSize: 14, color: 'var(--ink-muted)', marginBottom: 16 }}>
+                Upload corrected documents below and an admin will review your account again.
+              </p>
+            </>
+          ) : (
+            <>
+              <p style={{ fontWeight: 600, marginBottom: 6 }}>Your account is pending verification</p>
+              <p style={{ fontSize: 14, color: 'var(--ink-muted)', marginBottom: 16 }}>
+                You can add vehicles now, but you will not be able to post trips until an admin approves your account.
+                Upload a photo of your ID and driver's license below to speed this up.
+              </p>
+            </>
+          )}
           <form onSubmit={handleUploadDocs} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div className="field" style={{ flex: 1, minWidth: 200 }}>
               <label>ID document</label>
@@ -171,8 +197,8 @@ function ProviderDashboard() {
         </div>
       )}
 
-      {user.isVerified && (
-        <div className="card" style={{ marginBottom: 28, borderColor: 'var(--route)', background: '#F3F8F5' }}>
+      {user.verificationStatus === 'APPROVED' && (
+        <div className="card" style={{ marginBottom: 28, borderColor: 'var(--route)', background: '#f0f5ef' }}>
           <span className="badge badge-route">VERIFIED PROVIDER</span>
         </div>
       )}
@@ -186,17 +212,28 @@ function ProviderDashboard() {
             <div className="field"><label>Year</label><input type="number" value={vehicleForm.year} onChange={(e) => setVehicleForm({ ...vehicleForm, year: e.target.value })} required /></div>
             <div className="field"><label>Seat capacity</label><input type="number" min="1" value={vehicleForm.seatCapacity} onChange={(e) => setVehicleForm({ ...vehicleForm, seatCapacity: e.target.value })} required /></div>
             <div className="field"><label>Color (optional)</label><input value={vehicleForm.color} onChange={(e) => setVehicleForm({ ...vehicleForm, color: e.target.value })} /></div>
+            <div className="field"><label>Registration / plate number</label><input placeholder="e.g. CA 123-456" value={vehicleForm.registrationNumber} onChange={(e) => setVehicleForm({ ...vehicleForm, registrationNumber: e.target.value })} required /></div>
             <div className="field"><label>Amenities (comma separated)</label><input value={vehicleForm.amenities} onChange={(e) => setVehicleForm({ ...vehicleForm, amenities: e.target.value })} /></div>
+            <div className="field">
+              <label>Photo of the car (optional, recommended)</label>
+              <input type="file" accept="image/*" onChange={(e) => setVehiclePhoto(e.target.files[0])} />
+            </div>
             {vehicleError && <p className="error-text">{vehicleError}</p>}
             <button type="submit" disabled={vehicleSaving} className="btn btn-primary">{vehicleSaving ? 'Saving...' : 'Add vehicle'}</button>
           </form>
 
           {vehicles.length === 0 && !loading && <p className="eyebrow">No vehicles yet.</p>}
           {vehicles.map((v) => (
-            <div key={v.id} className="list-row">
-              <h4>{v.make} {v.model} ({v.year})</h4>
-              <p style={{ margin: '2px 0', fontSize: 13, color: 'var(--ink-muted)' }}>Seats: {v.seatCapacity}</p>
-              {v.amenities.length > 0 && <p style={{ margin: '2px 0', fontSize: 13, color: 'var(--ink-muted)' }}>{v.amenities.join(', ')}</p>}
+            <div key={v.id} className="list-row" style={{ display: 'flex', gap: 12 }}>
+              {v.photos && v.photos.length > 0 && (
+                <img src={API_BASE_URL + v.photos[0]} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+              )}
+              <div>
+                <h4>{v.make} {v.model} ({v.year})</h4>
+                <p style={{ margin: '2px 0', fontSize: 13, color: 'var(--ink-muted)' }}>Seats: {v.seatCapacity}</p>
+                {v.registrationNumber && <p className="mono" style={{ margin: '2px 0', fontSize: 13 }}>{v.registrationNumber}</p>}
+                {v.amenities.length > 0 && <p style={{ margin: '2px 0', fontSize: 13, color: 'var(--ink-muted)' }}>{v.amenities.join(', ')}</p>}
+              </div>
             </div>
           ))}
         </section>
@@ -236,10 +273,17 @@ function ProviderDashboard() {
           {trips.length === 0 && !loading && <p className="eyebrow">No trips posted yet.</p>}
           {trips.map((t) => (
             <div key={t.id} className="list-row">
-              <h4>{t.originCity} to {t.destinationCity}</h4>
-              <p style={{ margin: '2px 0', fontSize: 13, color: 'var(--ink-muted)' }} className="mono">{new Date(t.departureTime).toLocaleString()}</p>
-              <p style={{ margin: '6px 0 0', fontSize: 13 }}>{t.seatsBooked} / {t.totalSeats} booked - R{t.pricePerSeat}/seat</p>
-              <span className="badge badge-route" style={{ marginTop: 6, display: 'inline-block' }}>{t.status}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+                <div>
+                  <h4>{t.originCity} to {t.destinationCity}</h4>
+                  <p style={{ margin: '2px 0', fontSize: 13, color: 'var(--ink-muted)' }} className="mono">{new Date(t.departureTime).toLocaleString()}</p>
+                  <p style={{ margin: '6px 0 0', fontSize: 13 }}>{t.seatsBooked} / {t.totalSeats} booked - R{t.pricePerSeat}/seat</p>
+                  <span className="badge badge-route" style={{ marginTop: 6, display: 'inline-block' }}>{t.status}</span>
+                </div>
+                <Link to={'/dashboard/trips/' + t.id + '/passengers'} className="btn btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
+                  View passengers
+                </Link>
+              </div>
             </div>
           ))}
         </section>

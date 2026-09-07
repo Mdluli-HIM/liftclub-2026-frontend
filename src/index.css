@@ -3,18 +3,18 @@
   --card: #FFFFFF;
   --ink: #15181B;
   --ink-muted: #5B6169;
-  --route: #2B6E4F;
-  --route-dark: #1F5038;
-  --amber: #E8A23A;
-  --amber-dark: #C6821E;
+  --route: #557e4e;
+  --route-dark: #405f3a;
+  --amber: #5781a8;
+  --amber-dark: #344d65;
   --indigo: #35507A;
   --line: #DEDCD0;
   --danger: #B3402A;
   --radius: 4px;
   --radius-lg: 10px;
-  --brand: #EE7A24;
-  --brand-dark: #D2650F;
-  --brand-tint: #FDEEE0;
+  --brand: #1d61af;
+  --brand-dark: #154984;
+  --brand-tint: #e9f2fb;
 }
 
 * { box-sizing: border-box; }
@@ -190,10 +190,10 @@ input:focus, select:focus {
 .ticket-meta .time { font-family: 'IBM Plex Mono', monospace; color: var(--ink); font-weight: 500; display: block; margin-bottom: 2px; }
 
 .badge { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; padding: 5px 10px; border-radius: 100px; }
-.badge-amber { background: rgba(232,162,58,0.18); color: var(--amber-dark); }
+.badge-amber { background: rgba(87,129,168,0.18); color: var(--amber-dark); }
 .badge-brand { background: var(--brand-tint); color: var(--brand-dark); }
 .badge-muted { background: rgba(91,97,105,0.1); color: var(--ink-muted); }
-.badge-route { background: rgba(43,110,79,0.12); color: var(--route-dark); }
+.badge-route { background: rgba(85,126,78,0.14); color: var(--route-dark); }
 .price { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; }
 
 .list-row { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; background: #fff; }
@@ -224,3 +224,319 @@ input:focus, select:focus {
 .checkbox-row input { width: auto; }
 
 .range-value { font-size: 13px; color: var(--ink-muted); margin-top: 8px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(21,24,27,0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; z-index: 100;
+}
+.modal-card {
+  background: #fff; border-radius: 16px; max-width: 560px; width: 100%;
+  max-height: 85vh; overflow-y: auto; padding: 28px;
+  box-shadow: 0 24px 60px rgba(21,24,27,0.25);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.modal-close { border: none; background: transparent; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
+.modal-close:hover { background: var(--bg); color: var(--ink); }
+.policy-row { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px; }
+.policy-row:last-child { margin-bottom: 0; }
+.policy-icon {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--brand-tint);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 13px; color: var(--brand-dark);
+}
+.policy-text { font-size: 14px; color: var(--ink); line-height: 1.5; padding-top: 10px; }
+.policy-link {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--indigo);
+  cursor: pointer; background: none; border: none; padding: 0; font-family: inherit;
+}
+.policy-link:hover { text-decoration: underline; }
+
+textarea {
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px;
+  padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: #fff; color: var(--ink); width: 100%; resize: vertical;
+}
+textarea:focus { outline: none; border-color: var(--route); box-shadow: 0 0 0 3px rgba(43,110,79,0.15); }
+.badge-danger { background: rgba(179,64,42,0.12); color: var(--danger); }
+
+/* Date field: icon-only until a date is picked */
+.date-pill-field { gap: 6px; }
+.date-icon-input {
+  width: 22px !important;
+  min-width: 22px;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  color: transparent;
+  cursor: pointer;
+}
+.date-icon-input::-webkit-datetime-edit,
+.date-icon-input::-webkit-datetime-edit-fields-wrapper,
+.date-icon-input::-webkit-datetime-edit-text,
+.date-icon-input::-webkit-datetime-edit-month-field,
+.date-icon-input::-webkit-datetime-edit-day-field,
+.date-icon-input::-webkit-datetime-edit-year-field,
+.date-icon-input::-webkit-inner-spin-button {
+  display: none;
+}
+.date-icon-input::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+.date-display {
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* Seats field: icon + number, same visual language as the date field */
+.seat-field {
+  gap: 8px;
+}
+.seat-field input {
+  width: 22px !important;
+}
+
+.navbar-logo img {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.navbar-logo img {
+  height: 44px;
+}
+
+/* Nav bar legibility fix - white bar removes the mismatched edge around the logo's own white backing */
+.navbar { background: #fff; border-bottom: 1px solid var(--line); }
+.navbar-links a { color: var(--ink-muted); }
+.navbar-links a:hover { color: var(--ink); opacity: 1; }
+.navbar-user { color: var(--ink-muted); }
+.navbar-logo img { height: 56px; }
+
+/* ============ Mobile responsiveness ============ */
+
+.navbar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .navbar-inner { flex-wrap: wrap; padding: 12px 16px; }
+  .navbar-toggle { display: flex; }
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    padding-top: 16px;
+    margin-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .navbar-links.open { display: flex; }
+  .navbar-user { order: 10; font-size: 13px; }
+  .navbar-cta { width: 100%; text-align: center; }
+}
+
+@media (max-width: 900px) {
+  .hero2 { padding: 32px 20px 0; gap: 24px; }
+  .hero2-left, .hero2-right { flex: 1 1 100%; }
+  .results-sidebar { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .container { padding: 0 16px; }
+
+  .hero-heading { font-size: 30px; }
+  .hero2-left .subtitle { font-size: 14px; }
+  .tile-row { gap: 8px; }
+  .tile-icon { width: 46px; height: 46px; }
+  .tile span { font-size: 11px; }
+
+  .search-pill {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 20px;
+    padding: 14px;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(21,24,27,0.08);
+  }
+  .search-pill-field {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .search-pill-field.fixed { width: 100%; }
+  .search-pill-field.fixed input { width: 100% !important; text-align: left; }
+  .search-pill-swap { align-self: center; transform: rotate(90deg); }
+  .search-pill-divider { display: none; }
+  .search-pill-submit { width: 100%; margin-left: 0; padding: 14px; }
+
+  .collage { grid-template-columns: 1fr 1fr; grid-template-rows: 100px 130px 80px; gap: 8px; }
+
+  .ticket-route { padding: 16px 16px 10px; }
+  .ticket-city { font-size: 19px; }
+  .ticket-code { font-size: 10px; }
+  .ticket-details { padding: 12px 16px 14px; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .feature-row { grid-template-columns: 1fr; padding: 0 16px 48px; }
+  .section-heading { font-size: 24px; }
+
+  .results-page { padding: 20px 16px 48px; gap: 20px; }
+  .results-topbar { padding: 14px 16px; }
+  .results-topbar-inner { max-width: 100%; }
+
+  .modal-card { padding: 18px; max-width: calc(100vw - 32px); }
+  .modal-header h3 { font-size: 20px; }
+
+  .card { padding: 16px; }
+}
+
+/* Field icons (From/To/Date) - matches the person icon already used for seats */
+.field-with-icon { display: flex; align-items: center; gap: 8px; }
+.field-with-icon svg { flex-shrink: 0; }
+.date-pill-field { display: flex; align-items: center; gap: 8px; }
+
+/* Date comparison strip */
+.date-strip-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; display: flex; align-items: center; gap: 4px; margin-bottom: 20px; }
+.date-strip-nav { background: none; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; color: var(--ink-muted); display: flex; }
+.date-strip-nav:hover { color: var(--ink); }
+.date-strip-scroll { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding: 4px; scrollbar-width: none; }
+.date-strip-scroll::-webkit-scrollbar { display: none; }
+.date-strip-item {
+  flex: 0 0 auto; min-width: 92px; text-align: center; padding: 10px 8px;
+  border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: none; font-family: inherit;
+}
+.date-strip-item.active { background: var(--brand-tint); border-color: var(--brand); }
+.date-strip-item:disabled { opacity: 0.4; cursor: not-allowed; }
+.date-strip-day { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.date-strip-date { font-size: 13px; font-weight: 600; color: var(--ink); margin-top: 2px; }
+.date-strip-price { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; color: var(--brand-dark); margin-top: 4px; }
+.date-strip-noprice { font-size: 11px; color: var(--ink-muted); margin-top: 4px; }
+
+.search-pill-submit:disabled { background: #C9C6BC; cursor: not-allowed; }
+
+/* Mobile: show results before filters, not after */
+@media (max-width: 900px) {
+  .results-main { order: 1; }
+  .results-sidebar { order: 2; }
+}
+
+/* Date field: single custom icon, invisible native input still handles the click/picker */
+.date-pill-field { position: relative; }
+.date-input-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100% !important;
+  height: 100%;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0;
+}
+.date-display.placeholder { color: var(--ink-muted); }
+
+/* Compact search-results header, replaces the old inline search bar on this page */
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.results-header-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  text-align: center;
+  flex: 1;
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.results-header-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  flex-shrink: 0;
+  position: relative;
+}
+.results-header-btn:hover { opacity: 0.7; }
+.filter-badge {
+  position: absolute; top: -2px; right: -2px; background: var(--brand); color: #fff;
+  font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Date field: single custom icon, invisible native input still handles the click/picker */
+.date-pill-field { position: relative; }
+.date-input-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100% !important;
+  height: 100%;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0;
+}
+.date-display.placeholder { color: var(--ink-muted); }
+
+/* Compact search-results header, replaces the old inline search bar on this page */
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.results-header-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  text-align: center;
+  flex: 1;
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.results-header-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  flex-shrink: 0;
+  position: relative;
+}
+.results-header-btn:hover { opacity: 0.7; }
+.filter-badge {
+  position: absolute; top: -2px; right: -2px; background: var(--brand); color: #fff;
+  font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace;
+}

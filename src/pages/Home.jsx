@@ -1,12 +1,44 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CityAutocomplete from '../components/CityAutocomplete';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+
+function formatDateShort(isoDateStr) {
+  if (!isoDateStr) return '';
+  const d = new Date(isoDateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function SeatIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="7" r="3.2" stroke="#15181B" strokeWidth="1.6" />
+      <path d="M5 20C5 16.1 8.1 13 12 13C15.9 13 19 16.1 19 20" stroke="#15181B" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <rect x="3.5" y="5" width="17" height="15" rx="2" stroke="#15181B" strokeWidth="1.6" />
+      <path d="M3.5 9.5H20.5" stroke="#15181B" strokeWidth="1.6" />
+      <path d="M8 3V6.5M16 3V6.5" stroke="#15181B" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function Home() {
+  useDocumentTitle(
+    'Anywhere Shuttles - Book Long-Distance Rides Across South Africa',
+    'Search real long-distance shuttle and private car trips across South Africa and book your seat directly with verified drivers.'
+  );
+
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('');
   const [seats, setSeats] = useState(1);
+  const [formError, setFormError] = useState('');
   const navigate = useNavigate();
 
   function handleSwap() {
@@ -17,7 +49,16 @@ function Home() {
 
   function handleSearch(e) {
     e.preventDefault();
-    const params = new URLSearchParams({ origin, destination, date, seats });
+    if (!origin.trim() || !destination.trim()) {
+      setFormError('Please enter both a departure and destination city.');
+      return;
+    }
+    if (origin.trim().toLowerCase() === destination.trim().toLowerCase()) {
+      setFormError('Departure and destination cannot be the same.');
+      return;
+    }
+    setFormError('');
+    const params = new URLSearchParams({ origin: origin.trim(), destination: destination.trim(), date, seats });
     navigate('/search?' + params.toString());
   }
 
@@ -62,24 +103,36 @@ function Home() {
           </div>
 
           <form onSubmit={handleSearch} className="search-pill">
-            <CityAutocomplete className="search-pill-field" placeholder="From?" value={origin} onChange={setOrigin} />
+            <CityAutocomplete className="search-pill-field" placeholder="From?" value={origin} onChange={setOrigin} required />
             <button type="button" className="search-pill-swap" onClick={handleSwap} title="Switch">
               <svg width="17" height="13" viewBox="0 0 18 14" fill="none">
                 <path d="M1 4H15M15 4L11.5 0.5M15 4L11.5 7.5" stroke="#15181B" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M17 10H3M3 10L6.5 13.5M3 10L6.5 6.5" stroke="#15181B" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            <CityAutocomplete className="search-pill-field" placeholder="To?" value={destination} onChange={setDestination} />
+            <CityAutocomplete className="search-pill-field" placeholder="To?" value={destination} onChange={setDestination} required />
             <div className="search-pill-divider" />
-            <div className="search-pill-field">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <div className="search-pill-field date-pill-field">
+              <CalendarIcon />
+              <span className={'date-display' + (!date ? ' placeholder' : '')}>
+                {date ? formatDateShort(date) : 'Date'}
+              </span>
+              <input
+                type="date"
+                className="date-input-overlay"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                aria-label="Select date"
+              />
             </div>
             <div className="search-pill-divider" />
-            <div className="search-pill-field fixed" title="Number of seats">
-              <input type="number" min="1" value={seats} onChange={(e) => setSeats(e.target.value)} />
+            <div className="search-pill-field fixed seat-field" title="Number of seats">
+              <SeatIcon />
+              <input type="number" min="1" value={seats} onChange={(e) => setSeats(e.target.value)} aria-label="Number of seats" />
             </div>
-            <button type="submit" className="search-pill-submit">Search</button>
+            <button type="submit" className="search-pill-submit" disabled={!origin.trim() || !destination.trim()}>Search</button>
           </form>
+          {formError && <p className="error-text" style={{ marginTop: 10 }}>{formError}</p>}
         </div>
 
         <div className="hero2-right">
@@ -93,14 +146,14 @@ function Home() {
       </div>
 
       <div className="container" style={{ paddingTop: 56, paddingBottom: 24 }}>
-        <h2 className="section-heading">Why book with RideBooker</h2>
+        <h2 className="section-heading">Why book with Anywhere Shuttles</h2>
       </div>
 
       <div className="feature-row" style={{ paddingTop: 0 }}>
         <div className="feature-card">
           <div className="feature-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 3L19 6V11C19 15.5 16 18.8 12 20C8 18.8 5 15.5 5 11V6L12 3Z" stroke="#EE7A24" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M12 3L19 6V11C19 15.5 16 18.8 12 20C8 18.8 5 15.5 5 11V6L12 3Z" stroke="#154984" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
           </div>
           <h4>Verified drivers</h4>
@@ -109,7 +162,7 @@ function Home() {
         <div className="feature-card">
           <div className="feature-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M7 4H14C14.6 4 15 4.4 15 5V13H7V4Z" stroke="#EE7A24" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M7 4H14C14.6 4 15 4.4 15 5V13H7V4Z" stroke="#154984" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
           </div>
           <h4>Live seat availability</h4>
@@ -118,7 +171,7 @@ function Home() {
         <div className="feature-card">
           <div className="feature-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="#EE7A24" strokeWidth="1.4" strokeLinejoin="round" />
+              <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="#154984" strokeWidth="1.4" strokeLinejoin="round" />
             </svg>
           </div>
           <h4>Direct booking</h4>
@@ -127,8 +180,8 @@ function Home() {
         <div className="feature-card">
           <div className="feature-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12.6 3H19C19.6 3 20 3.4 20 4V10.4C20 10.7 19.9 11 19.7 11.2L11.7 19.2C11.3 19.6 10.7 19.6 10.3 19.2L4.8 13.7C4.4 13.3 4.4 12.7 4.8 12.3L12.8 4.3C13 4.1 13.3 4 13.6 4" stroke="#EE7A24" strokeWidth="1.4" strokeLinejoin="round" />
-              <circle cx="16" cy="7" r="1.3" fill="#EE7A24" />
+              <path d="M12.6 3H19C19.6 3 20 3.4 20 4V10.4C20 10.7 19.9 11 19.7 11.2L11.7 19.2C11.3 19.6 10.7 19.6 10.3 19.2L4.8 13.7C4.4 13.3 4.4 12.7 4.8 12.3L12.8 4.3C13 4.1 13.3 4 13.6 4" stroke="#154984" strokeWidth="1.4" strokeLinejoin="round" />
+              <circle cx="16" cy="7" r="1.3" fill="#154984" />
             </svg>
           </div>
           <h4>Fair, upfront pricing</h4>
