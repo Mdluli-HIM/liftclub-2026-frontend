@@ -53,6 +53,7 @@ function TripDetail() {
   const { user } = useAuth();
 
   const [trip, setTrip] = useState(null);
+  const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -73,11 +74,19 @@ function TripDetail() {
 
   const [showPolicies, setShowPolicies] = useState(false);
 
+  function loadTrip() {
+    return getTrip(id).then((data) => {
+      setTrip(data.trip);
+      setRevealed(!!data.revealed);
+    });
+  }
+
   useEffect(() => {
-    getTrip(id)
-      .then((data) => setTrip(data.trip))
+    setLoading(true);
+    loadTrip()
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function handleBook(e) {
@@ -94,8 +103,7 @@ function TripDetail() {
         passengerPhone,
       });
       setBookingSuccess(data.booking);
-      const updated = await getTrip(id);
-      setTrip(updated.trip);
+      await loadTrip(); // now that a confirmed booking exists, this returns the revealed trip
     } catch (err) {
       setBookingError(err.message);
     } finally {
@@ -108,9 +116,7 @@ function TripDetail() {
   if (!trip) return null;
 
   const seatsLeft = trip.totalSeats - trip.seatsBooked;
-  const revealedVehicle = bookingSuccess ? bookingSuccess.trip.vehicle : null;
-  const revealedProviderName = bookingSuccess ? bookingSuccess.trip.provider.name : null;
-  const hasRevealedPhoto = revealedVehicle && revealedVehicle.photos && revealedVehicle.photos.length > 0;
+  const hasPhoto = revealed && trip.vehicle.photos && trip.vehicle.photos.length > 0;
 
   return (
     <div className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
@@ -134,12 +140,12 @@ function TripDetail() {
 
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 24 }}>
         <div className="card" style={{ flex: 2, minWidth: 300 }}>
-          {bookingSuccess ? (
+          {revealed ? (
             <>
-              {hasRevealedPhoto ? (
+              {hasPhoto ? (
                 <img
-                  src={API_BASE_URL + revealedVehicle.photos[0]}
-                  alt={revealedVehicle.make + ' ' + revealedVehicle.model}
+                  src={API_BASE_URL + trip.vehicle.photos[0]}
+                  alt={trip.vehicle.make + ' ' + trip.vehicle.model}
                   style={{ width: '100%', height: 220, objectFit: 'cover', borderRadius: 10, marginBottom: 16 }}
                 />
               ) : (
@@ -147,13 +153,13 @@ function TripDetail() {
                   <span className="eyebrow">No photo provided by driver</span>
                 </div>
               )}
-              <h3 style={{ fontSize: 22, marginBottom: 4 }}>{revealedVehicle.make} {revealedVehicle.model} ({revealedVehicle.year})</h3>
-              {revealedVehicle.registrationNumber && (
+              <h3 style={{ fontSize: 22, marginBottom: 4 }}>{trip.vehicle.make} {trip.vehicle.model} ({trip.vehicle.year})</h3>
+              {trip.vehicle.registrationNumber && (
                 <p className="mono badge badge-muted" style={{ display: 'inline-block', marginBottom: 10 }}>
-                  {revealedVehicle.registrationNumber}
+                  {trip.vehicle.registrationNumber}
                 </p>
               )}
-              <p style={{ margin: '0 0 12px' }}>Driver: {revealedProviderName}</p>
+              <p style={{ margin: '0 0 12px' }}>Driver: {trip.provider.name}</p>
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '32px 16px', background: 'var(--bg)', borderRadius: 10, marginBottom: 16 }}>
@@ -197,7 +203,7 @@ function TripDetail() {
             <p style={{ color: 'var(--ink-muted)', fontSize: 14 }}>Only rider accounts can book trips.</p>
           )}
 
-          {user && user.role === 'CUSTOMER' && !bookingSuccess && (
+          {user && user.role === 'CUSTOMER' && !bookingSuccess && !revealed && (
             <form onSubmit={handleBook} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div className="field">
                 <label>Seats</label>
@@ -246,6 +252,12 @@ function TripDetail() {
                 <p style={{ margin: '2px 0', fontSize: 13 }}><strong>Drop-off:</strong> {bookingSuccess.dropoffLocation}</p>
               </div>
             </div>
+          )}
+
+          {!bookingSuccess && revealed && user && user.role === 'CUSTOMER' && (
+            <p style={{ fontSize: 14, color: 'var(--ink-muted)' }}>
+              You already have a confirmed booking on this trip. See <a href="/my-bookings">My bookings</a> for full details.
+            </p>
           )}
         </div>
       </div>
